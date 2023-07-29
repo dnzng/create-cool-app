@@ -1,6 +1,6 @@
 # create-cool-app
 
-Generate automatically some common templates.
+A cli that generates some commonly used templates.
 
 ## Usage
 
