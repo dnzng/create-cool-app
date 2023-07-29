@@ -1,6 +1,6 @@
 {
   "name": "create-cool-app",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Generate automatically some common templates",
   "packageManager": "pnpm@8.6.5",
   "engines": {
