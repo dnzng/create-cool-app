@@ -1,0 +1,46 @@
+{
+  "name": "create-cool-app",
+  "version": "1.0.7",
+  "description": "Generate automatically some common templates",
+  "packageManager": "pnpm@8.6.5",
+  "engines": {
+    "node": ">=16"
+  },
+  "keywords": [
+    "template"
+  ],
+  "author": "Dylan Zhang",
+  "license": "MIT",
+  "main": "index.js",
+  "bin": {
+    "create-cool-app": "index.js",
+    "cca": "index.js"
+  },
+  "files": [
+    "index.js",
+    "template-*"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dnzng/create-cool-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dnzng/create-cool-app/issues"
+  },
+  "homepage": "https://github.com/dnzng/create-cool-app#readme",
+  "scripts": {
+    "release": "bumpp --commit --tag --push && npm publish"
+  },
+  "dependencies": {
+    "enquirer": "^2.3.6",
+    "execa": "^5.0.0",
+    "fs-extra": "^9.0.1",
+    "minimist": "^1.2.5"
+  },
+  "devDependencies": {
+    "bumpp": "^9.1.1"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "name": "--projectname--",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "",
+  "keywords": [],
+  "packageManager": "pnpm@8.6.5",
+  "engines": {
+    "node": ">=16"
+  },
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "author": "--username--",
+  "license": "MIT",
+  "homepage": "https://github.com/dnzng/utils#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dnzng/utils.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dnzng/utils/issues"
+  },
+  "scripts": {
+    "dev": "rollup -c --watch",
+    "build": "rollup -c",
+    "clean": "rimraf dist",
+    "prepublishOnly": "npm run clean && npm run build",
+    "release": "bumpp --commit --tag --push && npm publish",
+    "test": "vitest",
+    "postinstall": "simple-git-hooks"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint-staged",
+    "commit-msg": "node scripts/verifyCommit.js"
+  },
+  "lint-staged": {
+    "*.{js,json}": [
+      "prettier --write"
+    ],
+    "src/**/*.[jt]s": [
+      "eslint"
+    ]
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.3",
+    "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.1.0",
+    "@typescript-eslint/parser": "^6.2.0",
+    "bumpp": "^9.1.1",
+    "chalk": "^5.3.0",
+    "esbuild": "^0.18.17",
+    "eslint": "^8.45.0",
+    "lint-staged": "^13.2.3",
+    "prettier": "^3.0.0",
+    "rimraf": "^5.0.1",
+    "rollup": "^3.26.3",
+    "rollup-plugin-esbuild": "^5.0.0",
+    "simple-git-hooks": "^2.9.0",
+    "typescript": "^5.1.6",
+    "vitest": "^0.33.0"
+  }
+}
