@@ -18,7 +18,7 @@
   },
   "files": [
     "index.js",
-    "template-*"
+    "template-*/**"
   ],
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
