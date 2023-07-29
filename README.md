@@ -7,6 +7,8 @@ Generate automatically some common templates.
 ```sh
 $ npm init cool-app <project-name>
 # or
+$ pnpm create cool-app <project-name>
+# or
 $ yarn create cool-app <project-name>
 ```
 
