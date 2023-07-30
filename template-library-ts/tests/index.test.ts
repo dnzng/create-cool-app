@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { log } from '../src'
+import { echo } from '../src'
 
 describe('test', () => {
   it('should print the value passed to itself', () => {
-    expect(log(1)).toEqual(1)
+    expect(echo(1)).toBe(1)
   })
 })
