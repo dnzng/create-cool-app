@@ -4,8 +4,8 @@ A cli that generates some commonly used templates.
 
 ## Usage
 
-```sh
-$ npm init cool-app <project-name>
+```shell
+$ npm create cool-app@latest <project-name>
 # or
 $ pnpm create cool-app <project-name>
 # or
