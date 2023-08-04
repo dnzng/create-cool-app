@@ -43,7 +43,7 @@
     "lint": "eslint ."
   },
   "devDependencies": {
-    "@dnzng/eslint-config-ts": "^0.1.2",
+    "@dnzng/eslint-config-ts": "^0.1.3",
     "@rollup/plugin-commonjs": "^25.0.3",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.1.0",
