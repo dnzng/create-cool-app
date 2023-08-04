@@ -2,11 +2,11 @@ name: Test
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
-
-  workflow_dispatch:
+    branches:
+      - main
 
 jobs:
   test:
@@ -23,16 +23,16 @@ jobs:
         uses: pnpm/action-setup@v2
         with:
           version: 8
-      
+
       - name: Setup Node ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
-      
+          cache: pnpm
+
       - name: Install dependencies
         run: pnpm install
-        
+
       - name: Build
         run: pnpm run build
 

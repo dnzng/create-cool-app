@@ -10,21 +10,21 @@ export default [
     output: [
       {
         file: 'dist/index.cjs',
-        format: 'cjs',
+        format: 'cjs'
       },
       {
         file: 'dist/index.mjs',
-        format: 'esm',
-      },
+        format: 'esm'
+      }
     ],
-    plugins: [esbuild(), nodeResolve(), commonjs(), json()],
+    plugins: [esbuild(), nodeResolve(), commonjs(), json()]
   },
   {
     input: 'src/index.ts',
     output: {
       file: 'dist/index.d.ts',
-      format: 'esm',
+      format: 'esm'
     },
-    plugins: [dts()],
-  },
+    plugins: [dts()]
+  }
 ]

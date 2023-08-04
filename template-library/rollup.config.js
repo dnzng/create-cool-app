@@ -1,5 +1,5 @@
 import esbuild from 'rollup-plugin-esbuild'
-import nodeResolve from '@rollup/plugin-node-resolve'
+import nodeResolve from '@rollup/plugin-node-resolve' // eslint-disable-line
 import commonjs from '@rollup/plugin-commonjs'
 import json from '@rollup/plugin-json'
 
@@ -9,13 +9,13 @@ export default [
     output: [
       {
         file: 'dist/index.cjs',
-        format: 'cjs',
+        format: 'cjs'
       },
       {
         file: 'dist/index.mjs',
-        format: 'esm',
-      },
+        format: 'esm'
+      }
     ],
-    plugins: [esbuild(), nodeResolve(), commonjs(), json()],
+    plugins: [esbuild(), nodeResolve(), commonjs(), json()]
   }
 ]
