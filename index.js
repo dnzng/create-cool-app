@@ -1,66 +1,182 @@
 #!/usr/bin/env node
-const path = require('path')
-const fs = require('fs-extra')
-const execa = require('execa')
-const { prompt } = require('enquirer')
-const args = require('minimist')(process.argv.slice(2))
+
+import path from 'node:path'
+import fs from 'fs-extra'
+import chalk from 'chalk'
+import minimist from 'minimist'
+import { fileURLToPath } from 'node:url'
+import inquirer from 'inquirer'
+import { execa } from 'execa'
+
+const { prompt } = inquirer
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const cwd = process.cwd()
+const args = minimist(process.argv.slice(2))
+const isDryRun = args.dry
+let root = cwd
 
 const run = (bin, args, opts = {}) => 
   execa(bin, args, { stdio: 'inherit', ...opts })
+const dryRun = async (bin, args, opts = {}) =>
+  console.log(chalk.blue(`[dryrun] ${bin} ${args.join(' ')}`), opts)
+const runIfNotDry = isDryRun ? dryRun : run
 
 main().catch(console.error)
 
 async function main() {
-  const targetDir = args._[0] || '.'
-  const cwd = process.cwd()
-  const root = path.join(cwd, targetDir)
-
-  // check if there is already target directory
-  await fs.ensureDir(root)
-  const existing = await fs.readdir(root)
-  if (existing.length) {
-    console.warn(`Error: target directory is not empty.`)
-    process.exit(1)
-  }
+  const answers = await answerQuestions()
+  console.log('\n')
   
-  let answer = { template: 'library-ts' }
-  // select a template
-  if (!args.debug) {
-    answer = await prompt({
-      type: 'select',
-      name: 'template',
+  // process template
+  const templateDir = path.join(__dirname, `template-${answers.templateName}`)
+  if (isDryRun) {
+    console.log(chalk.blue(`[dryrun] creating ${answers.projectName} directory`))
+    console.log(chalk.blue(`[dryrun] copying ${answers.templateName}`))
+    console.log(chalk.blue(`[dryrun] replacing placeholders in template`))
+  } else {
+    // create directory
+    await fs.ensureDir(root)
+    // copy template
+    await copy(templateDir, root)
+    // replace placeholders
+    await replace(root)
+  }
+
+  // process installation
+  if (answers.needInstall && answers.packageManager) {
+    try {
+      await runIfNotDry(answers.packageManager, ['install'], { cwd: root })
+      console.log('\n')
+    } catch (e) {
+      console.log(chalk.red(`Please install ${answers.packageManager} first.`))
+    }
+  }
+
+  // proecess git
+  if (answers.needGitInit) {
+    await runIfNotDry('git', ['init'], { cwd: root })
+  }
+  if (answers.needGitRemoteOrigin && answers.gitRemoteOrigin) {
+    await runIfNotDry('git', ['remote', 'add', 'origin', answers.gitRemoteOrigin], { cwd: root })
+  }
+  if (answers.needGitPush) {
+    await runIfNotDry('git', ['add', '-A'], { cwd: root })
+    await runIfNotDry('git', ['push', '-u', 'origin'], { cwd: root })
+  }
+}
+
+async function answerQuestions() {
+  const project = [
+    {
+      type: 'input',
+      name: 'projectName',
+      message: `What's your project name?`,
+      async validate(input) {
+        if (!input) return 'The name cannot be empty.'
+        if (/[\s,]/.test(input)) return `The name cannot include space and comma.`
+
+        root = path.join(cwd, input)
+        const result = await existsDir(root)
+        if (!result.found) return true
+        if (result.hasFiles) return `The directory already exists.`
+        return true
+      }
+    }
+  ]
+
+  const template = [
+    {
+      type: 'list',
+      name: 'templateName',
       message: 'Select a template',
       choices: [
-        'library',
         'library-ts',
+        'library',
       ]
-    })
+    },
+  ]
+
+  const install = [
+    {
+      type: 'confirm',
+      name: 'needInstall',
+      message: 'Whether to install dependencies?'
+    },
+    {
+      when(answer) {
+        return answer.needInstall
+      },
+      type: 'list',
+      name: 'packageManager',
+      message: 'Choose a package manager.',
+      choices: [
+        'pnpm',
+        'npm',
+        'yarn'
+      ],
+      default: 'pnpm'
+    },
+  ]
+
+  const git = [
+    {
+      type: 'confirm',
+      name: 'needGitInit',
+      message: 'Whether to init your project as an Git repository?'
+    },
+    {
+      when(answer) {
+        return answer.needGitInit
+      },
+      type: 'confirm',
+      name: 'needGitRemoteOrigin',
+      message: 'Whether to set a git remote origin?'
+    },
+    {
+      when(answer) {
+        return answer.needGitRemoteOrigin
+      },
+      type: 'input',
+      name: 'gitRemoteOrigin',
+      message: `What's your remote git repository url?`,
+      validate(input) {
+        if (!input) return 'The url cannot be empty.'
+        return true
+      }
+    },
+    {
+      when(answer) {
+        return answer.needGitInit && answer.gitRemoteOrigin
+      },
+      type: 'confirm',
+      name: 'needGitPush',
+      message: 'Whether to push the current project to your remote repository?'
+    }
+  ]
+
+  return await prompt([
+    ...project,
+    ...template,
+    ...install,
+    ...git
+  ])
+}
+
+async function existsDir(dir) {
+  const result = {
+    found: false,
+    hasFiles: false
   }
 
-  // start scaffolding project
-  console.log(`\nScaffolding project in ${root}...`)
-  const templateName = answer.template
-  const templateDir = path.join(__dirname, `template-${templateName}`)
-
-  // copy template
-  await copy(templateDir, root)
-
-  // replace placeholder
-  await replace(root)
-
-  // initialize git
-  if (args.git) {
-    await run('git', ['init', root], { stdio: 'pipe' })
+  try {
+    const existing = await fs.readdir(dir)
+    result.found = true
+    result.hasFiles = !!existing.length
+  } catch (e) {
+    result.found = false
   }
 
-  // done
-  console.log(`\nDone. Now run:\n`)
-  if (root !== cwd) {
-    console.log(`  cd ${path.relative(cwd, root)}`)
-  }
-  console.log(`  pnpm install`)
-  console.log(`  pnpm run dev`)
-  console.log()
+  return result
 }
 
 async function copy(templateDir, root) {
