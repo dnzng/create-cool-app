@@ -5,14 +5,14 @@ A cli that generates some commonly used templates.
 ## Usage
 
 ```shell
-$ npm create cool-app@latest <project-name>
+$ npm create cool-app@latest
 # or
-$ pnpm create cool-app <project-name>
+$ pnpm create cool-app
 # or
-$ yarn create cool-app <project-name>
+$ yarn create cool-app
 ```
 
 ## List of template
 
-- library
 - library-ts
+- library
