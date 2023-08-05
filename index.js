@@ -15,24 +15,25 @@ const args = minimist(process.argv.slice(2))
 const isDryRun = args.dry
 let root = cwd
 
-const run = (bin, args, opts = {}) => 
-  execa(bin, args, { stdio: 'inherit', ...opts })
-const dryRun = async (bin, args, opts = {}) =>
-  console.log(chalk.blue(`[dryrun] ${bin} ${args.join(' ')}`), opts)
-const runIfNotDry = isDryRun ? dryRun : run
+const run = async (bin, args, opts = {}) => isDryRun
+  ? console.log(chalk.blue(`[dryrun] ${bin} ${args.join(' ')}`), opts)
+  : execa(bin, args, { stdio: 'inherit', ...opts })
+const step = msg => isDryRun 
+  ? console.log(chalk.blue(`[dryrun] ${msg}`)) 
+  : console.log(chalk.cyan(msg))
 
 main().catch(console.error)
 
 async function main() {
   const answers = await answerQuestions()
-  console.log('\n')
-  
+  console.log('')
+
   // process template
   const templateDir = path.join(__dirname, `template-${answers.templateName}`)
   if (isDryRun) {
-    console.log(chalk.blue(`[dryrun] creating ${answers.projectName} directory`))
-    console.log(chalk.blue(`[dryrun] copying ${answers.templateName}`))
-    console.log(chalk.blue(`[dryrun] replacing placeholders in template`))
+    step(`creating ${answers.projectName} directory`)
+    step(`copying ${answers.templateName}`)
+    step(`replacing placeholders`)
   } else {
     // create directory
     await fs.ensureDir(root)
@@ -45,8 +46,8 @@ async function main() {
   // process installation
   if (answers.needInstall && answers.packageManager) {
     try {
-      await runIfNotDry(answers.packageManager, ['install'], { cwd: root })
-      console.log('\n')
+      console.log('')
+      await run(answers.packageManager, ['install'], { cwd: root })
     } catch (e) {
       console.log(chalk.red(`Please install ${answers.packageManager} first.`))
     }
@@ -54,15 +55,28 @@ async function main() {
 
   // proecess git
   if (answers.needGitInit) {
-    await runIfNotDry('git', ['init'], { cwd: root })
+    console.log('')
+    await run('git', ['init'], { cwd: root })
+    if (answers.needGitRemoteOrigin && answers.gitRemoteOrigin) {
+      await run('git', ['remote', 'add', 'origin', answers.gitRemoteOrigin], { cwd: root })
+    }
+    if (answers.needGitPush) {
+      await run('git', ['add', '-A'], { cwd: root })
+      await run('git', ['push', '-u', 'origin'], { cwd: root })
+    }
   }
-  if (answers.needGitRemoteOrigin && answers.gitRemoteOrigin) {
-    await runIfNotDry('git', ['remote', 'add', 'origin', answers.gitRemoteOrigin], { cwd: root })
+
+  // done
+  const packageManager = answers.packageManager || 'pnpm'
+  console.log(`\nDone. Now run:`)
+  if (root !== cwd) {
+    console.log(`  cd ${path.relative(cwd, root)}`)
   }
-  if (answers.needGitPush) {
-    await runIfNotDry('git', ['add', '-A'], { cwd: root })
-    await runIfNotDry('git', ['push', '-u', 'origin'], { cwd: root })
+  if (!answers.needGitInit) {
+    console.log(`  ${packageManager} install`)
   }
+  console.log(`  ${packageManager} run dev`)
+  console.log()
 }
 
 async function answerQuestions() {
