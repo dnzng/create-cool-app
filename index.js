@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 import path from 'node:path'
-import fs from 'fs-extra'
-import chalk from 'chalk'
-import minimist from 'minimist'
-import { fileURLToPath } from 'node:url'
 import inquirer from 'inquirer'
+import fs from 'fs-extra'
+import minimist from 'minimist'
+import chalk from 'chalk'
 import { execa } from 'execa'
+import { fileURLToPath } from 'node:url'
 
 const { prompt } = inquirer
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
