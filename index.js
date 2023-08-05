@@ -18,9 +18,9 @@ let root = cwd
 const run = async (bin, args, opts = {}) => isDryRun
   ? console.log(chalk.blue(`[dryrun] ${bin} ${args.join(' ')}`), opts)
   : execa(bin, args, { stdio: 'inherit', ...opts })
-const step = msg => isDryRun 
-  ? console.log(chalk.blue(`[dryrun] ${msg}`)) 
-  : console.log(chalk.cyan(msg))
+const dryStep = msg => console.log(chalk.blue(`[dryrun] ${msg}`))
+const guide = msg => console.log(chalk.green(msg))
+const warn = msg => console.log(chalk.red(msg))
 
 main().catch(console.error)
 
@@ -31,9 +31,9 @@ async function main() {
   // process template
   const templateDir = path.join(__dirname, `template-${answers.templateName}`)
   if (isDryRun) {
-    step(`creating ${answers.projectName} directory`)
-    step(`copying ${answers.templateName}`)
-    step(`replacing placeholders`)
+    dryStep(`creating ${answers.projectName} directory`)
+    dryStep(`copying ${answers.templateName}`)
+    dryStep(`replacing placeholders`)
   } else {
     // create directory
     await fs.ensureDir(root)
@@ -49,7 +49,7 @@ async function main() {
       console.log('')
       await run(answers.packageManager, ['install'], { cwd: root })
     } catch (e) {
-      console.log(chalk.red(`Please install ${answers.packageManager} first.`))
+      warn(`Please install ${answers.packageManager} first.`)
     }
   }
 
@@ -62,20 +62,24 @@ async function main() {
     }
     if (answers.needGitPush) {
       await run('git', ['add', '-A'], { cwd: root })
-      await run('git', ['push', '-u', 'origin'], { cwd: root })
+      try {
+        await run('git', ['push', '-u', 'origin'], { cwd: root })
+      } catch (e) {
+        warn(`Please check whether ${answers.gitRemoteOrigin} is correct.`)
+      }
     }
   }
 
   // done
   const packageManager = answers.packageManager || 'pnpm'
-  console.log(`\nDone. Now run:`)
+  guide(`\nDone. Now run:`)
   if (root !== cwd) {
-    console.log(`  cd ${path.relative(cwd, root)}`)
+    guide(`  cd ${path.relative(cwd, root)}`)
   }
   if (!answers.needGitInit) {
-    console.log(`  ${packageManager} install`)
+    guide(`  ${packageManager} install`)
   }
-  console.log(`  ${packageManager} run dev`)
+  guide(`  ${packageManager} run dev`)
   console.log()
 }
 
