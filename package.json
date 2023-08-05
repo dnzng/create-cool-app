@@ -11,6 +11,7 @@
     "template"
   ],
   "main": "index.js",
+  "module": "index.js",
   "bin": {
     "create-cool-app": "index.js",
     "cca": "index.js"
