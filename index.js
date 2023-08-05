@@ -26,11 +26,11 @@ main().catch(console.error)
 
 async function main() {
   const answers = await answerQuestions()
-  console.log('')
 
   // process template
   const templateDir = path.join(__dirname, `template-${answers.templateName}`)
   if (isDryRun) {
+    console.log('')
     dryStep(`creating ${answers.projectName} directory`)
     dryStep(`copying ${answers.templateName}`)
     dryStep(`replacing placeholders`)
