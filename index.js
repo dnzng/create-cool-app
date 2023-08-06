@@ -7,11 +7,13 @@ import minimist from 'minimist'
 import chalk from 'chalk'
 import { execa } from 'execa'
 import { fileURLToPath } from 'node:url'
+import { EventEmitter } from 'node:events'
 
 const { prompt } = inquirer
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const cwd = process.cwd()
 const args = minimist(process.argv.slice(2))
+const collector = new EventEmitter()
 const isDryRun = args.dry
 let root = cwd
 
@@ -20,7 +22,8 @@ const run = async (bin, args, opts = {}) => isDryRun
   : execa(bin, args, { stdio: 'inherit', ...opts })
 const dryStep = msg => console.log(chalk.blue(`[dryrun] ${msg}`))
 const guide = msg => console.log(chalk.green(msg))
-const warn = msg => console.log(chalk.red(msg))
+const printLine = () => console.log()
+const printError = (type, msg) => console.log(chalk.red(`[create-cool-app/${type}]: ${msg}`))
 
 main().catch(console.error)
 
@@ -30,7 +33,7 @@ async function main() {
   // process template
   const templateDir = path.join(__dirname, `template-${answers.templateName}`)
   if (isDryRun) {
-    console.log('')
+    printLine()
     dryStep(`creating ${answers.projectName} directory`)
     dryStep(`copying ${answers.templateName}`)
     dryStep(`replacing placeholders`)
@@ -46,16 +49,17 @@ async function main() {
   // process installation
   if (answers.needInstall && answers.packageManager) {
     try {
-      console.log('')
+      printLine()
       await run(answers.packageManager, ['install'], { cwd: root })
     } catch (e) {
-      warn(`Please install ${answers.packageManager} first.`)
+      collector.on('error', () => printError('install', `Please install ${answers.packageManager} first.`))
+      
     }
   }
 
   // proecess git
   if (answers.needGitInit) {
-    console.log('')
+    printLine()
     await run('git', ['init'], { cwd: root })
     if (answers.needGitRemoteOrigin && answers.gitRemoteOrigin) {
       await run('git', ['remote', 'add', 'origin', answers.gitRemoteOrigin], { cwd: root })
@@ -66,22 +70,29 @@ async function main() {
       try {
         await run('git', ['push', '-u', 'origin'], { cwd: root })
       } catch (e) {
-        warn(`Please check whether ${answers.gitRemoteOrigin} is correct.`)
+        collector.on('error', () => {
+          printError('git', `Git failed to push the current project to your remote repository. Please check that your remote url '${answers.gitRemoteOrigin}' is accurate.`)
+        })
       }
     }
   }
 
-  // done
-  const packageManager = answers.packageManager || 'pnpm'
-  guide(`\nDone. Now run:`)
-  if (root !== cwd) {
-    guide(`  cd ${path.relative(cwd, root)}`)
+  if (collector.listenerCount('error')) {
+    collector.emit('error')
+    printLine()
+  } else {
+    // done
+    const packageManager = answers.packageManager || 'pnpm'
+    guide(`\nDone. Now run:`)
+    if (root !== cwd) {
+      guide(`  cd ${path.relative(cwd, root)}`)
+    }
+    if (!answers.needGitInit) {
+      guide(`  ${packageManager} install`)
+    }
+    guide(`  ${packageManager} run dev`)
+    printLine()
   }
-  if (!answers.needGitInit) {
-    guide(`  ${packageManager} install`)
-  }
-  guide(`  ${packageManager} run dev`)
-  console.log()
 }
 
 async function answerQuestions() {
