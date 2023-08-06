@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 import path from 'node:path'
+import fs from 'node:fs'
 import inquirer from 'inquirer'
-import fs from 'fs-extra'
 import minimist from 'minimist'
 import chalk from 'chalk'
-import { execa } from 'execa'
+import { execaSync } from 'execa'
 import { fileURLToPath } from 'node:url'
 import { EventEmitter } from 'node:events'
 
@@ -15,101 +15,95 @@ const cwd = process.cwd()
 const args = minimist(process.argv.slice(2))
 const collector = new EventEmitter()
 const isDryRun = args.dry
-let root = cwd
 
-const run = async (bin, args, opts = {}) => isDryRun
+const run = (bin, args, opts = {}) => isDryRun
   ? console.log(chalk.blue(`[dryrun] ${bin} ${args.join(' ')}`), opts)
-  : execa(bin, args, { stdio: 'inherit', ...opts })
+  : execaSync(bin, args, { stdio: 'inherit', ...opts })
 const dryStep = msg => console.log(chalk.blue(`[dryrun] ${msg}`))
 const guide = msg => console.log(chalk.green(msg))
 const printLine = () => console.log()
 const printError = (type, msg) => console.log(chalk.red(`[create-cool-app/${type}]: ${msg}`))
 
-main().catch(console.error)
+init().catch(console.error)
 
-async function main() {
-  const answers = await answerQuestions()
+async function init() {
+  const answers = await question()
+  const projectRoot = path.resolve(cwd, answers.projectName)
 
   // process template
-  const templateDir = path.join(__dirname, `template-${answers.templateName}`)
+  const templateDir = path.resolve(__dirname, `template-${answers.templateName}`)
   if (isDryRun) {
     printLine()
     dryStep(`creating ${answers.projectName} directory`)
     dryStep(`copying ${answers.templateName}`)
     dryStep(`replacing placeholders`)
   } else {
-    // create directory
-    await fs.ensureDir(root)
     // copy template
-    await copy(templateDir, root)
+    copyDir(templateDir, projectRoot)
     // replace placeholders
-    await replace(root)
+    replace(projectRoot)
   }
 
   // process installation
-  if (answers.needInstall && answers.packageManager) {
+  if (answers.needInstall && answers.pkgManager) {
     try {
       printLine()
-      await run(answers.packageManager, ['install'], { cwd: root })
+      run(answers.pkgManager, ['install'], { cwd: projectRoot })
     } catch (e) {
-      collector.on('error', () => printError('install', `Please install ${answers.packageManager} first.`))
-      
+      collector.on('error', () => printError('install', `Please install '${answers.pkgManager}' first.`))
     }
   }
 
   // proecess git
   if (answers.needGitInit) {
     printLine()
-    await run('git', ['init'], { cwd: root })
+    run('git', ['init'], { cwd: projectRoot })
     if (answers.needGitRemoteOrigin && answers.gitRemoteOrigin) {
-      await run('git', ['remote', 'add', 'origin', answers.gitRemoteOrigin], { cwd: root })
+      run('git', ['remote', 'add', 'origin', answers.gitRemoteOrigin], { cwd: projectRoot })
     }
     if (answers.needGitPush) {
-      await run('git', ['add', '-A'], { cwd: root })
-      await run('git', ['commit', '-m', 'chore: init'], { cwd: root })
+      run('git', ['add', '-A'], { cwd: projectRoot })
+      run('git', ['commit', '-m', 'chore: init'], { cwd: projectRoot })
       try {
-        await run('git', ['push', '-u', 'origin'], { cwd: root })
+        run('git', ['push', '-u', 'origin'], { cwd: projectRoot })
       } catch (e) {
         collector.on('error', () => {
-          printError('git', `Git failed to push the current project to your remote repository. Please check that your remote url '${answers.gitRemoteOrigin}' is accurate.`)
+          printError('git', `Failed to push the current project to your remote repository. Please check that your remote url '${answers.gitRemoteOrigin}' is accurate.`)
         })
       }
     }
   }
 
+  // report erros
   if (collector.listenerCount('error')) {
+    printLine()
     collector.emit('error')
-    printLine()
-  } else {
-    // done
-    const packageManager = answers.packageManager || 'pnpm'
-    guide(`\nDone. Now run:`)
-    if (root !== cwd) {
-      guide(`  cd ${path.relative(cwd, root)}`)
-    }
-    if (!answers.needGitInit) {
-      guide(`  ${packageManager} install`)
-    }
-    guide(`  ${packageManager} run dev`)
-    printLine()
   }
+
+  // done
+  const pkgManager = answers.pkgManager || 'pnpm'
+  guide(`\nDone. Now run:`)
+  guide(`  cd ${answers.projectName}`)
+  if (!answers.needInstall) {
+    guide(`  ${pkgManager} install`)
+  }
+  guide(`  ${pkgManager} run dev`)
+  printLine()
 }
 
-async function answerQuestions() {
+async function question() {
   const project = [
     {
       type: 'input',
       name: 'projectName',
       message: `What's your project name?`,
-      async validate(input) {
+      validate(input) {
         if (!input) return 'The name cannot be empty.'
         if (/[\s,]/.test(input)) return `The name cannot include space and comma.`
-
-        root = path.join(cwd, input)
-        const result = await existsDir(root)
-        if (!result.found) return true
-        if (result.hasFiles) return `The directory already exists.`
-        return true
+        const dir = path.resolve(cwd, input)
+        return isEmpty(dir)
+          ? true
+          : `The ${input} directory already exists.`
       }
     }
   ]
@@ -137,7 +131,7 @@ async function answerQuestions() {
         return answer.needInstall
       },
       type: 'list',
-      name: 'packageManager',
+      name: 'pkgManager',
       message: 'Choose a package manager.',
       choices: [
         'pnpm',
@@ -192,42 +186,41 @@ async function answerQuestions() {
   ])
 }
 
-async function existsDir(dir) {
-  const result = {
-    found: false,
-    hasFiles: false
-  }
-
-  try {
-    const existing = await fs.readdir(dir)
-    result.found = true
-    result.hasFiles = !!existing.length
-  } catch (e) {
-    result.found = false
-  }
-
-  return result
+function isEmpty(path) {
+  if (!fs.existsSync(path)) return true
+  const files = fs.readdirSync(path)
+  return files.length === 0 || (files.length === 1 && files[0] === '.git')
 }
 
-async function copy(templateDir, root) {
-  const files = await fs.readdir(templateDir)
+function copyDir(srcDir, destDir) {
+  fs.mkdirSync(destDir, { recursive: true })
+
+  const files = fs.readdirSync(srcDir)
   const excludeFiles = ['node_modules', 'dist', 'pnpm-lock.yaml']
   const renameFiles = { _gitignore: '.gitignore' }
-  const filesToCopy = files.filter(f => !excludeFiles.includes(f))
+  const filesToCopy = files.filter(file => !excludeFiles.includes(file))
 
   for (const file of filesToCopy) {
-    const targetPath = renameFiles[file]
-      ? path.join(root, renameFiles[file])
-      : path.join(root, file)
-    await fs.copy(path.join(templateDir, file), targetPath)
+    const srcFile = path.resolve(srcDir, file)
+    const destFile = path.resolve(destDir, renameFiles[file] ?? file)
+    copy(srcFile, destFile)
   }
 }
 
-async function replace(root) {
-  const projectName = path.basename(root)
-  const user = await parseGitConfig('user')
+function copy(src, dest) {
+  const stat = fs.statSync(src)
+  if (stat.isDirectory()) {
+    copyDir(src, dest)
+  } else {
+    fs.copyFileSync(src, dest)
+  }
+}
+
+function replace(dir) {
+  const projectName = path.basename(dir)
+  const user = parseGitConfig('user')
   
-  await replacePlaceholder(
+  replacePlaceholder(
     /--(\w+?)--/ig,
     (_, m) => {
       switch (m) {
@@ -238,22 +231,22 @@ async function replace(root) {
       }
     },
     [
-      path.join(root, 'package.json'),
-      path.join(root, 'README.md'),
+      path.resolve(dir, 'package.json'),
+      path.resolve(dir, 'README.md'),
     ]
   )
 }
 
-async function replacePlaceholder(placeholder, str, files) {
+function replacePlaceholder(placeholder, str, files) {
   for (const file of files) {
-    const content = await fs.readFile(file, { encoding: 'utf-8' })
+    const content = fs.readFileSync(file, { encoding: 'utf-8' })
     const result = content.replace(placeholder, str)
-    await fs.writeFile(file, result)
+    fs.writeFileSync(file, result)
   }
 }
 
-async function parseGitConfig(key) {
-  const { stdout } = await run('git', ['config', '--list'], { stdio: 'pipe' })
+function parseGitConfig(key) {
+  const { stdout } = run('git', ['config', '--list'], { stdio: 'pipe' })
   const pairs = {}
   stdout.split('\n').forEach(s => {
     const [ keys, val ] = s.split('=')
