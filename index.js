@@ -62,6 +62,7 @@ async function main() {
     }
     if (answers.needGitPush) {
       await run('git', ['add', '-A'], { cwd: root })
+      await run('git', ['commit', '-m', 'chore: init'], { cwd: root })
       try {
         await run('git', ['push', '-u', 'origin'], { cwd: root })
       } catch (e) {
