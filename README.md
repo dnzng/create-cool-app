@@ -1,15 +1,15 @@
 # create-cool-app
 
-A cli that generates some commonly used templates.
+A cli that generates some commonly-used templates.
 
 ## Usage
 
 ```shell
-$ npm create cool-app@latest
-# or
-$ pnpm create cool-app
-# or
-$ yarn create cool-app
+npm create cool-app@latest
+# or pnpms
+pnpm create cool-app
+# or yarn
+yarn create cool-app
 ```
 
 ## List of template
