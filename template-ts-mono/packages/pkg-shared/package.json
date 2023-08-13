@@ -9,16 +9,16 @@
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "author": "--username--",
+  "author": "--yourname--",
   "license": "MIT",
-  "homepage": "https://github.com/--username--/--projectname--/tree/main/packages/pkg-shared#readme",
+  "homepage": "https://github.com/--yourname--/--projectname--/tree/main/packages/pkg-shared#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/--username--/--projectname--.git",
+    "url": "git+https://github.com/--yourname--/--projectname--.git",
     "directory": "packages/pkg-shared"
   },
   "bugs": {
-    "url": "https://github.com/--username--/--projectname--/issues"
+    "url": "https://github.com/--yourname--/--projectname--/issues"
   },
   "keywords": [],
   "scripts": {

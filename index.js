@@ -215,12 +215,12 @@ function replacePlaceholder(file) {
   const user = parseGitConfig('user')
   const content = fs.readFileSync(file, { encoding: 'utf-8' })
   const result = content.replace(
-    /--(\w+?)--/ig, 
+    /--(\w+?)--/ig,
     (_, m) => {
     switch (m) {
       case 'projectname':
         return answers.projectName
-      case 'username':
+      case 'yourname':
         return user.name || m
     }
   })
@@ -228,7 +228,7 @@ function replacePlaceholder(file) {
 }
 
 function parseGitConfig(key) {
-  const { stdout } = run('git', ['config', '--list'], { stdio: 'pipe' })
+  const { stdout } = run('git', ['config', '--global', '--list'], { stdio: 'pipe' })
   const pairs = {}
   stdout.split('\n').forEach(s => {
     const [ keys, val ] = s.split('=')

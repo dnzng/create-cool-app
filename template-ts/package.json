@@ -13,15 +13,15 @@
   "files": [
     "dist"
   ],
-  "author": "--username--",
+  "author": "--yourname--",
   "license": "MIT",
-  "homepage": "https://github.com/--username--/--projectname--#readme",
+  "homepage": "https://github.com/--yourname--/--projectname--#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/--username--/--projectname--.git"
+    "url": "git+https://github.com/--yourname--/--projectname--.git"
   },
   "bugs": {
-    "url": "https://github.com/--username--/--projectname--/issues"
+    "url": "https://github.com/--yourname--/--projectname--/issues"
   },
   "keywords": [],
   "scripts": {

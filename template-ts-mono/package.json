@@ -8,7 +8,7 @@
   "engines": {
     "node": ">=16"
   },
-  "author": "--username--",
+  "author": "--yourname--",
   "license": "MIT",
   "keywords": [],
   "scripts": {
