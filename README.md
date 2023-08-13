@@ -6,7 +6,7 @@ A cli that generates automatically some commonly-used templates.
 
 ```shell
 npm create cool-app@latest
-# or pnpms
+# or pnpm
 pnpm create cool-app
 # or yarn
 yarn create cool-app
