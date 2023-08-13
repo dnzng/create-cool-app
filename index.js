@@ -177,7 +177,7 @@ async function question() {
   ])
 
   if (!answers.needInstall) {
-    answers.pkgManager = 'npm'
+    answers.pkgManager = 'pnpm'
   }
 
   return answers
