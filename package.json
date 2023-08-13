@@ -31,7 +31,7 @@
   },
   "scripts": {
     "release": "bumpp && pnpm publish",
-    "release:dry": "npm publish --dry-run"
+    "release-dry": "npm publish --dry-run"
   },
   "dependencies": {
     "chalk": "^4.1.0",
