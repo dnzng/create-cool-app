@@ -31,7 +31,7 @@ init().catch(console.error)
 
 async function init() {
   answers = await question()
-  console.log(answers)
+
   const projectRoot = path.resolve(cwd, answers.projectName)
 
   // copy template
@@ -75,13 +75,12 @@ async function init() {
   }
 
   // done
-  const pkgManager = answers.pkgManager || 'npm'
   guide(`\nDone. Now run:`)
   guide(`  cd ${answers.projectName}`)
   if (!answers.needInstall) {
-    guide(`  ${pkgManager} install`)
+    guide(`  ${answers.pkgManager} install`)
   }
-  guide(`  ${pkgManager} run dev\n`)
+  guide(`  ${answers.pkgManager} run dev\n`)
 }
 
 async function question() {
@@ -170,12 +169,18 @@ async function question() {
     }
   ]
 
-  return await prompt([
+  const answers =  await prompt([
     ...project,
     ...template,
     ...install,
     ...git
   ])
+
+  if (!answers.needInstall) {
+    answers.pkgManager = 'npm'
+  }
+
+  return answers
 }
 
 function isEmpty(path) {
