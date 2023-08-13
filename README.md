@@ -1,6 +1,6 @@
 # create-cool-app
 
-A cli that generates some commonly-used templates.
+A cli that generates automatically some commonly-used templates.
 
 ## Usage
 
@@ -14,5 +14,5 @@ yarn create cool-app
 
 ## List of template
 
-- library-ts
-- library
+- ts
+- ts-mono
