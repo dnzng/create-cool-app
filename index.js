@@ -74,13 +74,12 @@ async function init() {
   }
 
   // done
-  const pkgManager = answers.pkgManager || 'pnpm'
   guide(`\nDone. Now run:`)
   guide(`  cd ${answers.projectName}`)
   if (!answers.needInstall) {
-    guide(`  ${pkgManager} install`)
+    guide(`  ${answers.pkgManager} install`)
   }
-  guide(`  ${pkgManager} run dev\n`)
+  guide(`  ${answers.pkgManager} run dev\n`)
 }
 
 async function question() {
