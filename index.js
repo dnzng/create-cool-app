@@ -31,6 +31,7 @@ init().catch(console.error)
 
 async function init() {
   answers = await question()
+  console.log(answers)
   const projectRoot = path.resolve(cwd, answers.projectName)
 
   // copy template
@@ -74,12 +75,13 @@ async function init() {
   }
 
   // done
+  const pkgManager = answers.pkgManager || 'npm'
   guide(`\nDone. Now run:`)
   guide(`  cd ${answers.projectName}`)
   if (!answers.needInstall) {
-    guide(`  ${answers.pkgManager} install`)
+    guide(`  ${pkgManager} install`)
   }
-  guide(`  ${answers.pkgManager} run dev\n`)
+  guide(`  ${pkgManager} run dev\n`)
 }
 
 async function question() {
@@ -118,14 +120,15 @@ async function question() {
       message: 'Whether to install dependencies?'
     },
     {
-      when(answer) {
-        return answer.needInstall
+      when(answers) {
+        return answers.needInstall
       },
       type: 'list',
       name: 'pkgManager',
       message: 'Choose a package manager.',
       choices: [
-        'pnpm'
+        'pnpm',
+        'npm'
       ],
       default: 'pnpm'
     },
@@ -138,16 +141,16 @@ async function question() {
       message: 'Whether to init your project as an Git repository?'
     },
     {
-      when(answer) {
-        return answer.needGitInit
+      when(answers) {
+        return answers.needGitInit
       },
       type: 'confirm',
       name: 'needGitRemoteOrigin',
       message: 'Whether to set a git remote origin?'
     },
     {
-      when(answer) {
-        return answer.needGitRemoteOrigin
+      when(answers) {
+        return answers.needGitRemoteOrigin
       },
       type: 'input',
       name: 'gitRemoteOrigin',
@@ -158,8 +161,8 @@ async function question() {
       }
     },
     {
-      when(answer) {
-        return answer.needGitInit && answer.gitRemoteOrigin
+      when(answers) {
+        return answers.needGitInit && answers.gitRemoteOrigin
       },
       type: 'confirm',
       name: 'needGitPush',
