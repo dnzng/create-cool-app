@@ -1,14 +1,14 @@
 {
-  "name": "--projectname--",
+  "name": "${projectname}",
   "private": true,
   "type": "module",
   "version": "0.0.1",
   "description": "",
-  "packageManager": "pnpm@8.6.5",
+  "packageManager": "pnpm@${pkgManagerVersion}",
   "engines": {
     "node": ">=16"
   },
-  "author": "--yourname--",
+  "author": "${yourname}",
   "license": "MIT",
   "keywords": [],
   "scripts": {

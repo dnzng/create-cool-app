@@ -1,8 +1,8 @@
 {
-  "name": "--projectname--",
+  "name": "${projectname}",
   "version": "0.0.1",
   "description": "",
-  "packageManager": "pnpm@8.6.5",
+  "packageManager": "${pkgManager}@${pkgManagerVersion}",
   "engines": {
     "node": ">=16"
   },
@@ -13,15 +13,15 @@
   "files": [
     "dist"
   ],
-  "author": "--yourname--",
+  "author": "${yourname}",
   "license": "MIT",
-  "homepage": "https://github.com/--yourname--/--projectname--#readme",
+  "homepage": "https://github.com/${yourname}/${projectname}#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/--yourname--/--projectname--.git"
+    "url": "git+https://github.com/${yourname}/${projectname}.git"
   },
   "bugs": {
-    "url": "https://github.com/--yourname--/--projectname--/issues"
+    "url": "https://github.com/${yourname}/${projectname}/issues"
   },
   "keywords": [],
   "scripts": {
@@ -44,7 +44,7 @@
     "vitest": "^0.33.0"
   },
   "simple-git-hooks": {
-    "pre-commit": "pnpm lint-staged && pnpm typecheck"
+    "pre-commit": "${pkgManagerX} lint-staged && ${pkgManagerX} typecheck"
   },
   "lint-staged": {
     "*.{js,ts,json}": [

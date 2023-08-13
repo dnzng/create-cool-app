@@ -84,7 +84,7 @@ async function init() {
 }
 
 async function question() {
-  const project = [
+  const projectAnswers = await prompt([
     {
       type: 'input',
       name: 'projectName',
@@ -98,9 +98,9 @@ async function question() {
           : `The ${input} directory already exists.`
       }
     }
-  ]
+  ])
 
-  const template = [
+  const templateAnswers = await prompt([
     {
       type: 'list',
       name: 'templateName',
@@ -110,30 +110,32 @@ async function question() {
         'ts-mono',
       ]
     },
-  ]
+  ])
 
-  const install = [
+  const installAnswers = await prompt([
+    {
+      type: 'list',
+      name: 'pkgManager',
+      message: 'Choose a package manager.',
+      choices() {
+        const { templateName } = templateAnswers
+        switch (templateName) {
+          case 'ts-mono':
+            return ['pnpm']
+          default:
+            return ['pnpm', 'npm']
+        }
+      },
+      default: 'pnpm'
+    },
     {
       type: 'confirm',
       name: 'needInstall',
       message: 'Whether to install dependencies?'
-    },
-    {
-      when(answers) {
-        return answers.needInstall
-      },
-      type: 'list',
-      name: 'pkgManager',
-      message: 'Choose a package manager.',
-      choices: [
-        'pnpm',
-        'npm'
-      ],
-      default: 'pnpm'
-    },
-  ]
+    }
+  ])
 
-  const git = [
+  const gitAnswers = await prompt([
     {
       type: 'confirm',
       name: 'needGitInit',
@@ -167,20 +169,14 @@ async function question() {
       name: 'needGitPush',
       message: 'Whether to push the current project to your remote repository?'
     }
-  ]
-
-  const answers =  await prompt([
-    ...project,
-    ...template,
-    ...install,
-    ...git
   ])
 
-  if (!answers.needInstall) {
-    answers.pkgManager = 'pnpm'
+  return {
+    ...projectAnswers,
+    ...templateAnswers,
+    ...installAnswers,
+    ...gitAnswers
   }
-
-  return answers
 }
 
 function isEmpty(path) {
@@ -222,13 +218,23 @@ function replacePlaceholder(file) {
   const user = parseGitConfig('user')
   const content = fs.readFileSync(file, { encoding: 'utf-8' })
   const result = content.replace(
-    /--(\w+?)--/ig,
+    /\$\{\s*(\w+?)\s*\}/ig,
     (_, m) => {
     switch (m) {
       case 'projectname':
         return answers.projectName
       case 'yourname':
         return user.name || m
+      case 'pkgManager':
+        return answers.pkgManager
+      case 'pkgManagerVersion':
+        const { stdout } = run(answers.pkgManager, ['--version'], { stdio: 'pipe' })
+        return stdout
+      case 'pkgManagerX':
+        return ({
+          pnpm: 'pnpm',
+          npm: 'npx'
+        })[answers.pkgManager]
     }
   })
   fs.writeFileSync(file, result)

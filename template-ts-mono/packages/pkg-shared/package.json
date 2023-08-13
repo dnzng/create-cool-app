@@ -2,23 +2,23 @@
   "name": "pkg-shared",
   "version": "0.0.1",
   "description": "",
-  "packageManager": "pnpm@8.6.5",
+  "packageManager": "pnpm@${pkgManagerVersion}",
   "engines": {
     "node": ">=16"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "author": "--yourname--",
+  "author": "${yourname}",
   "license": "MIT",
-  "homepage": "https://github.com/--yourname--/--projectname--/tree/main/packages/pkg-shared#readme",
+  "homepage": "https://github.com/${yourname}/${projectname}/tree/main/packages/pkg-shared#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/--yourname--/--projectname--.git",
+    "url": "git+https://github.com/${yourname}/${projectname}.git",
     "directory": "packages/pkg-shared"
   },
   "bugs": {
-    "url": "https://github.com/--yourname--/--projectname--/issues"
+    "url": "https://github.com/${yourname}/${projectname}/issues"
   },
   "keywords": [],
   "scripts": {
