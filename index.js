@@ -215,7 +215,6 @@ function copy(src, dest) {
 }
 
 function replacePlaceholder(file) {
-  const user = parseGitConfig('user')
   const content = fs.readFileSync(file, { encoding: 'utf-8' })
   const result = content.replace(
     /\$\{\s*(\w+?)\s*\}/ig,
@@ -224,6 +223,7 @@ function replacePlaceholder(file) {
       case 'projectname':
         return answers.projectName
       case 'yourname':
+        const user = parseGitConfig('user')
         return user.name || m
       case 'pkgManager':
         return answers.pkgManager
