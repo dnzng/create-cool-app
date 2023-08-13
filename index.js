@@ -39,7 +39,7 @@ async function init() {
   copyDir(templateDir, projectRoot)
 
   // process installation
-  if (answers.needInstall && answers.pkgManager) {
+  if (answers.needInstall) {
     try {
       printLine()
       run(answers.pkgManager, ['install'], { cwd: projectRoot })
