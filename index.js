@@ -1,16 +1,13 @@
 #!/usr/bin/env node
 
-import path from 'node:path'
-import fs from 'node:fs'
-import inquirer from 'inquirer'
-import minimist from 'minimist'
-import chalk from 'chalk'
-import { execaSync } from 'execa'
-import { fileURLToPath } from 'node:url'
-import { EventEmitter } from 'node:events'
+const path = require('path')
+const fs = require('fs')
+const minimist = require('minimist')
+const chalk = require('chalk')
+const execa = require('execa')
+const { EventEmitter } = require('events')
+const { prompt } = require('inquirer')
 
-const { prompt } = inquirer
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const cwd = process.cwd()
 const args = minimist(process.argv.slice(2))
 const collector = new EventEmitter()
@@ -18,31 +15,27 @@ const isDryRun = args.dry
 
 const run = (bin, args, opts = {}) => isDryRun
   ? console.log(chalk.blue(`[dryrun] ${bin} ${args.join(' ')}`), opts)
-  : execaSync(bin, args, { stdio: 'inherit', ...opts })
+  : execa.sync(bin, args, { stdio: 'inherit', ...opts })
 const dryStep = msg => console.log(chalk.blue(`[dryrun] ${msg}`))
 const guide = msg => console.log(chalk.green(msg))
 const printLine = () => console.log()
 const printError = (type, msg) => console.log(chalk.red(`[create-cool-app/${type}]: ${msg}`))
 
+const excludeFiles = ['node_modules', 'dist', 'pnpm-lock.yaml']
+const renameFiles = { _gitignore: '.gitignore' }
+const replaceFiles = ['package.json', 'README.md']
+
+let answers = {}
+
 init().catch(console.error)
 
 async function init() {
-  const answers = await question()
+  answers = await question()
   const projectRoot = path.resolve(cwd, answers.projectName)
 
-  // process template
+  // copy template
   const templateDir = path.resolve(__dirname, `template-${answers.templateName}`)
-  if (isDryRun) {
-    printLine()
-    dryStep(`creating ${answers.projectName} directory`)
-    dryStep(`copying ${answers.templateName}`)
-    dryStep(`replacing placeholders`)
-  } else {
-    // copy template
-    copyDir(templateDir, projectRoot)
-    // replace placeholders
-    replace(projectRoot)
-  }
+  copyDir(templateDir, projectRoot)
 
   // process installation
   if (answers.needInstall && answers.pkgManager) {
@@ -87,8 +80,7 @@ async function init() {
   if (!answers.needInstall) {
     guide(`  ${pkgManager} install`)
   }
-  guide(`  ${pkgManager} run dev`)
-  printLine()
+  guide(`  ${pkgManager} run dev\n`)
 }
 
 async function question() {
@@ -114,8 +106,8 @@ async function question() {
       name: 'templateName',
       message: 'Select a template',
       choices: [
-        'library-ts',
-        'library',
+        'ts',
+        'ts-mono',
       ]
     },
   ]
@@ -134,9 +126,7 @@ async function question() {
       name: 'pkgManager',
       message: 'Choose a package manager.',
       choices: [
-        'pnpm',
-        'npm',
-        'yarn'
+        'pnpm'
       ],
       default: 'pnpm'
     },
@@ -193,16 +183,17 @@ function isEmpty(path) {
 }
 
 function copyDir(srcDir, destDir) {
+  if (isDryRun) {
+    printLine()
+    return dryStep(`copying ${answers.templateName}`)
+  }
+
   fs.mkdirSync(destDir, { recursive: true })
-
   const files = fs.readdirSync(srcDir)
-  const excludeFiles = ['node_modules', 'dist', 'pnpm-lock.yaml']
-  const renameFiles = { _gitignore: '.gitignore' }
   const filesToCopy = files.filter(file => !excludeFiles.includes(file))
-
   for (const file of filesToCopy) {
     const srcFile = path.resolve(srcDir, file)
-    const destFile = path.resolve(destDir, renameFiles[file] ?? file)
+    const destFile = path.resolve(destDir, renameFiles[file] ? renameFiles[file] : file)
     copy(srcFile, destFile)
   }
 }
@@ -213,36 +204,27 @@ function copy(src, dest) {
     copyDir(src, dest)
   } else {
     fs.copyFileSync(src, dest)
+    const fileName = path.basename(dest)
+    if (replaceFiles.includes(fileName)) {
+      replacePlaceholder(dest)
+    }
   }
 }
 
-function replace(dir) {
-  const projectName = path.basename(dir)
+function replacePlaceholder(file) {
   const user = parseGitConfig('user')
-  
-  replacePlaceholder(
-    /--(\w+?)--/ig,
+  const content = fs.readFileSync(file, { encoding: 'utf-8' })
+  const result = content.replace(
+    /--(\w+?)--/ig, 
     (_, m) => {
-      switch (m) {
-        case 'projectname':
-          return projectName
-        case 'username':
-          return user.name || m
-      }
-    },
-    [
-      path.resolve(dir, 'package.json'),
-      path.resolve(dir, 'README.md'),
-    ]
-  )
-}
-
-function replacePlaceholder(placeholder, str, files) {
-  for (const file of files) {
-    const content = fs.readFileSync(file, { encoding: 'utf-8' })
-    const result = content.replace(placeholder, str)
-    fs.writeFileSync(file, result)
-  }
+    switch (m) {
+      case 'projectname':
+        return answers.projectName
+      case 'username':
+        return user.name || m
+    }
+  })
+  fs.writeFileSync(file, result)
 }
 
 function parseGitConfig(key) {

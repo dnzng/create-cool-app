@@ -1,0 +1,39 @@
+{
+  "name": "--projectname--",
+  "private": true,
+  "type": "module",
+  "version": "0.0.1",
+  "description": "",
+  "packageManager": "pnpm@8.6.5",
+  "engines": {
+    "node": ">=16"
+  },
+  "author": "--username--",
+  "license": "MIT",
+  "keywords": [],
+  "scripts": {
+    "build": "pnpm -r --filter=./packages/* run build",
+    "release": "bumpp -r && pnpm -r publish",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "lint": "eslint"
+  },
+  "devDependencies": {
+    "@dnzng/eslint-config-ts": "^0.1.3",
+    "bumpp": "^9.1.1",
+    "eslint": "^8.45.0",
+    "lint-staged": "^13.2.3",
+    "simple-git-hooks": "^2.9.0",
+    "tsup": "^7.2.0",
+    "typescript": "^5.1.6",
+    "vitest": "^0.33.0"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint-staged && pnpm typecheck"
+  },
+  "lint-staged": {
+    "*.{js,ts,json}": [
+      "eslint --cache --fix"
+    ]
+  }
+}
