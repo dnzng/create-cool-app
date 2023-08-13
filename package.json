@@ -1,7 +1,7 @@
 {
   "name": "create-cool-app",
   "version": "1.2.0",
-  "description": "A cli that generates automatically some commonly-used templates",
+  "description": "A cli that generates automatically some commonly-used templates.",
   "packageManager": "pnpm@8.6.5",
   "engines": {
     "node": ">=14"
@@ -17,7 +17,8 @@
   "files": [
     "index.js",
     "template-*/**",
-    "!template-*/**/node_modules"
+    "!template-*/**/node_modules",
+    "!template-*/**/dist"
   ],
   "author": "Dylan Zhang",
   "license": "MIT",
