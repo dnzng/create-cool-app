@@ -70,7 +70,7 @@ async function init() {
     }
     if (answers.needGitPush) {
       step(`executing 'git add -A'...`)
-      run('git', ['add', '-A'], { cwd: projectRoot })
+      run('git', ['add', '-A'], sharedRunOpts)
       step(`executing 'git commit -m \'chore: init\''...`)
       run('git', ['commit', '-m', 'chore: init'], sharedRunOpts)
       step(`executing 'git push -u origin'...`)
