@@ -1,6 +1,6 @@
 {
   "name": "create-cool-app",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "A cli that generates automatically some commonly-used templates.",
   "packageManager": "pnpm@8.6.5",
   "engines": {
