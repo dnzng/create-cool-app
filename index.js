@@ -28,6 +28,7 @@ const guide = msg => console.log(chalk.green(msg))
 const printLine = () => console.log()
 const printError = (type, msg) => console.log(chalk.red(`[error/${type}]: ${msg}`))
 
+const cache = new Map()
 const excludeFiles = ['node_modules', 'dist', 'pnpm-lock.yaml']
 const renameFiles = { _gitignore: '.gitignore' }
 const replaceFiles = ['package.json', 'README.md']
@@ -37,6 +38,7 @@ let answers = {}
 init().catch(console.error)
 
 async function init() {
+  // questions
   answers = await question()
 
   const projectRoot = path.resolve(cwd, answers.projectName)
@@ -239,8 +241,7 @@ function replacePlaceholder(file) {
       case 'pkgManager':
         return answers.pkgManager
       case 'pkgManagerVersion':
-        const { stdout } = run(answers.pkgManager, ['--version'])
-        return stdout
+        return parsePkgManager('version')
       case 'pkgManagerX':
         return ({
           pnpm: 'pnpm',
@@ -251,16 +252,35 @@ function replacePlaceholder(file) {
   fs.writeFileSync(file, result)
 }
 
-function parseGitConfig(key) {
-  const { stdout } = run('git', ['config', '--global', '--list'])
-  const pairs = {}
-  stdout.split('\n').forEach(s => {
-    const [ keys, val ] = s.split('=')
-    keys.split('.').reduce((result, key, index, array) => {
-      return result[key] = index === array.length - 1
-        ? val
-        : result[key] || {}
-    }, pairs)
-  })
-  return key ? pairs[key] || {} : pairs
+function parseGitConfig(prop) {
+  let config = {}
+  if (cache.has('git')) {
+    config = cache.get('git')
+  } else {
+    const { stdout } = run('git', ['config', '--global', '--list'])
+    stdout.split('\n').forEach(s => {
+      const [ keys, val ] = s.split('=')
+      keys.split('.').reduce((result, key, index, array) => {
+        return result[key] = index === array.length - 1
+          ? val
+          : result[key] || {}
+      }, config)
+    })
+    cache.set('git', config)
+  }
+  return prop ? config[prop]: config
+}
+
+function parsePkgManager(prop) {
+  let settings
+  if (cache.has('pkgManager')) {
+    settings = cache.get('pkgManager')
+  } else {
+    const { stdout: version } = run(answers.pkgManager, ['--version'])
+    settings = {
+      version
+    }
+    cache.set('pkgManager', settings)
+  }
+  return prop ? settings[prop] : settings
 }
