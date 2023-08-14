@@ -10,16 +10,23 @@ const { prompt } = require('inquirer')
 
 const cwd = process.cwd()
 const args = minimist(process.argv.slice(2))
-const collector = new EventEmitter()
 const isDryRun = args.dry
+const collector = new EventEmitter()
 
 const run = (bin, args, opts = {}) => isDryRun
   ? console.log(chalk.blue(`[dryrun] ${bin} ${args.join(' ')}`), opts)
-  : execa.sync(bin, args, { stdio: 'inherit', ...opts })
-const dryStep = msg => console.log(chalk.blue(`[dryrun] ${msg}`))
+  : execa.sync(bin, args, { stdio: 'pipe', ...opts })
+const runWithErrorHandler = (fn, type, msg) => {
+  try {
+    fn()
+  } catch (e) {
+    collector.on('error', () => printError(type, msg))
+  }
+}
+const step = msg => console.log(chalk.blue(`[log]: ${msg}`))
 const guide = msg => console.log(chalk.green(msg))
 const printLine = () => console.log()
-const printError = (type, msg) => console.log(chalk.red(`[create-cool-app/${type}]: ${msg}`))
+const printError = (type, msg) => console.log(chalk.red(`[error/${type}]: ${msg}`))
 
 const excludeFiles = ['node_modules', 'dist', 'pnpm-lock.yaml']
 const renameFiles = { _gitignore: '.gitignore' }
@@ -33,38 +40,45 @@ async function init() {
   answers = await question()
 
   const projectRoot = path.resolve(cwd, answers.projectName)
+  const templateDir = path.resolve(__dirname, `template-${answers.templateName}`)
+  const sharedRunOpts = {
+    cwd: projectRoot
+  }
 
   // copy template
-  const templateDir = path.resolve(__dirname, `template-${answers.templateName}`)
+  printLine()
+  step(`copying '${answers.templateName}' template...`)
   copyDir(templateDir, projectRoot)
 
   // process installation
   if (answers.needInstall) {
-    try {
-      printLine()
-      run(answers.pkgManager, ['install'], { cwd: projectRoot })
-    } catch (e) {
-      collector.on('error', () => printError('install', `Please install '${answers.pkgManager}' first.`))
-    }
+    step('installing dependencies...')
+    runWithErrorHandler(
+      () => run(answers.pkgManager, ['install'], sharedRunOpts),
+      'install',
+      `Please install '${answers.pkgManager}' first.`
+    )
   }
 
   // proecess git
   if (answers.needGitInit) {
-    printLine()
-    run('git', ['init'], { cwd: projectRoot })
+    step('initilizing git repository...')
+    run('git', ['init'], sharedRunOpts)
     if (answers.needGitRemoteOrigin && answers.gitRemoteOrigin) {
-      run('git', ['remote', 'add', 'origin', answers.gitRemoteOrigin], { cwd: projectRoot })
+      step(`executing 'git remote add origin ${answers.gitRemoteOrigin}'...`)
+      run('git', ['remote', 'add', 'origin', answers.gitRemoteOrigin], sharedRunOpts)
     }
     if (answers.needGitPush) {
+      step(`executing 'git add -A'...`)
       run('git', ['add', '-A'], { cwd: projectRoot })
-      run('git', ['commit', '-m', 'chore: init'], { cwd: projectRoot })
-      try {
-        run('git', ['push', '-u', 'origin'], { cwd: projectRoot })
-      } catch (e) {
-        collector.on('error', () => {
-          printError('git', `Failed to push the current project to your remote repository. Please check that your remote url '${answers.gitRemoteOrigin}' is accurate.`)
-        })
-      }
+      step(`executing 'git commit -m \'chore: init\''...`)
+      run('git', ['commit', '-m', 'chore: init'], sharedRunOpts)
+      step(`executing 'git push -u origin'...`)
+      runWithErrorHandler(
+        () => run('git', ['push', '-u', 'origin'], sharedRunOpts),
+        'git',
+        `Failed to push the current project to your remote repository. Please check that your remote url '${answers.gitRemoteOrigin}' is accurate.`
+      )
     }
   }
 
@@ -186,10 +200,7 @@ function isEmpty(path) {
 }
 
 function copyDir(srcDir, destDir) {
-  if (isDryRun) {
-    printLine()
-    return dryStep(`copying ${answers.templateName}`)
-  }
+  if (isDryRun) return
 
   fs.mkdirSync(destDir, { recursive: true })
   const files = fs.readdirSync(srcDir)
@@ -228,7 +239,7 @@ function replacePlaceholder(file) {
       case 'pkgManager':
         return answers.pkgManager
       case 'pkgManagerVersion':
-        const { stdout } = run(answers.pkgManager, ['--version'], { stdio: 'pipe' })
+        const { stdout } = run(answers.pkgManager, ['--version'])
         return stdout
       case 'pkgManagerX':
         return ({
@@ -241,7 +252,7 @@ function replacePlaceholder(file) {
 }
 
 function parseGitConfig(key) {
-  const { stdout } = run('git', ['config', '--global', '--list'], { stdio: 'pipe' })
+  const { stdout } = run('git', ['config', '--global', '--list'])
   const pairs = {}
   stdout.split('\n').forEach(s => {
     const [ keys, val ] = s.split('=')
