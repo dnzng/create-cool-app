@@ -242,11 +242,9 @@ function replacePlaceholder(file) {
         return answers.pkgManager
       case 'pkgManagerVersion':
         return parsePkgManager('version')
-      case 'pkgManagerX':
-        return ({
-          pnpm: 'pnpm',
-          npm: 'npx'
-        })[answers.pkgManager]
+      case 'pkgManagerNpx':
+        const map = parsePkgManager('npx')
+        return map[answers.pkgManager]
     }
   })
   fs.writeFileSync(file, result)
@@ -277,8 +275,13 @@ function parsePkgManager(prop) {
     settings = cache.get('pkgManager')
   } else {
     const { stdout: version } = run(answers.pkgManager, ['--version'])
+    const npx = {
+      pnpm: 'pnpm',
+      npm: 'npx'
+    }
     settings = {
-      version
+      version,
+      npx
     }
     cache.set('pkgManager', settings)
   }

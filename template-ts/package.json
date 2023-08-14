@@ -44,7 +44,7 @@
     "vitest": "^0.33.0"
   },
   "simple-git-hooks": {
-    "pre-commit": "${pkgManagerX} lint-staged && ${pkgManagerX} typecheck"
+    "pre-commit": "${pkgManagerNpx} lint-staged && ${pkgManagerNpx} typecheck"
   },
   "lint-staged": {
     "*.{js,ts,json}": [
