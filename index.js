@@ -82,7 +82,7 @@ async function init() {
     }
   }
 
-  // report erros
+  // report errors
   if (collector.listenerCount('error')) {
     printLine()
     collector.emit('error')
