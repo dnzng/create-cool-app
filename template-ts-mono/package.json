@@ -1,7 +1,6 @@
 {
   "name": "${projectname}",
   "private": true,
-  "type": "module",
   "version": "0.0.1",
   "description": "",
   "packageManager": "pnpm@${pkgManagerVersion}",
