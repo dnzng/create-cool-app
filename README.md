@@ -16,3 +16,7 @@ yarn create cool-app
 
 - ts
 - ts-mono
+
+## License
+
+MIT
