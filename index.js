@@ -219,10 +219,12 @@ function copy(src, dest) {
   if (stat.isDirectory()) {
     copyDir(src, dest)
   } else {
-    fs.copyFileSync(src, dest)
     const fileName = path.basename(dest)
     if (replaceFiles.includes(fileName)) {
-      replacePlaceholder(dest)
+      const content = replacePlaceholder(src)
+      fs.writeFileSync(dest, content)
+    } else {
+      fs.copyFileSync(src, dest)
     }
   }
 }
@@ -247,7 +249,7 @@ function replacePlaceholder(file) {
         return map[answers.pkgManager]
     }
   })
-  fs.writeFileSync(file, result)
+  return result
 }
 
 function parseGitConfig(prop) {
