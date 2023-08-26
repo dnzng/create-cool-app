@@ -14,7 +14,7 @@ pnpm create cool-app
 yarn create cool-app
 ```
 
-## List of template
+## List of templates
 
 - ts
 - ts-mono
