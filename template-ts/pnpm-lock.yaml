@@ -6,8 +6,8 @@ settings:
 
 devDependencies:
   '@dnzng/eslint-config-ts':
-    specifier: ^0.1.5
-    version: 0.1.5(eslint@8.45.0)(typescript@5.1.6)
+    specifier: ^0.1.6
+    version: 0.1.6(eslint@8.45.0)(typescript@5.1.6)
   bumpp:
     specifier: ^9.1.1
     version: 9.1.1
@@ -241,8 +241,8 @@ packages:
       to-fast-properties: 2.0.0
     dev: true
 
-  /@dnzng/eslint-config-basic@0.1.5(eslint@8.45.0):
-    resolution: {integrity: sha512-gLDc/D96ZURx6xDoUQDX6xO1jDWz7U2H19c6qHJhZf8ZXZs+h0UZE68MCHU9iOIJlC9CDofkA0CexXmJDIKDsg==}
+  /@dnzng/eslint-config-basic@0.1.6(eslint@8.45.0):
+    resolution: {integrity: sha512-f4bNT3kP7TbxRIkdHM1i2sVr45qoCxx8ywrNLCYl38p++ECjPZOxh7esJnsRP928r4pDccom/pLB3I5aWTnETA==}
     peerDependencies:
       eslint: '>=7.4.0'
     dependencies:
@@ -254,13 +254,13 @@ packages:
       - supports-color
     dev: true
 
-  /@dnzng/eslint-config-ts@0.1.5(eslint@8.45.0)(typescript@5.1.6):
-    resolution: {integrity: sha512-K3wBjSoUV3xt8Pr+1lQWGDISailfHJxjn+B36AOs1KNCh/Kl5AZ6OBchwbj9wksaL6N1vERGWuFpSaMD1hB11w==}
+  /@dnzng/eslint-config-ts@0.1.6(eslint@8.45.0)(typescript@5.1.6):
+    resolution: {integrity: sha512-3RL2i0aNpExRYLyRRBnRqWUcJi2OGRQQ+LAZZig+B/BQLZYmKPsT9zQoTz45RjspRbER+dIlEpqlJO/Qjbs75g==}
     peerDependencies:
       eslint: '>=7.4.0'
       typescript: '>=3.9'
     dependencies:
-      '@dnzng/eslint-config-basic': 0.1.5(eslint@8.45.0)
+      '@dnzng/eslint-config-basic': 0.1.6(eslint@8.45.0)
       '@typescript-eslint/eslint-plugin': 6.2.1(@typescript-eslint/parser@6.2.1)(eslint@8.45.0)(typescript@5.1.6)
       '@typescript-eslint/parser': 6.2.1(eslint@8.45.0)(typescript@5.1.6)
       eslint: 8.45.0
