@@ -30,7 +30,7 @@
     "pre-commit": "pnpm lint-staged && pnpm typecheck"
   },
   "lint-staged": {
-    "*.{js,ts,json}": [
+    "*.{js,ts,json,md}": [
       "eslint --cache --fix"
     ]
   }
