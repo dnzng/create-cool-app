@@ -32,6 +32,7 @@ const cache = new Map()
 const excludeFiles = ['node_modules', 'dist', 'pnpm-lock.yaml']
 const renameFiles = { _gitignore: '.gitignore' }
 const replaceFiles = ['package.json', 'README.md']
+const ignoreFiles = ['.DS_Store']
 
 let answers = {}
 
@@ -197,7 +198,7 @@ async function question() {
 
 function isEmpty(path) {
   if (!fs.existsSync(path)) return true
-  const files = fs.readdirSync(path)
+  const files = fs.readdirSync(path).filter(file => !ignoreFiles.includes(file))
   return files.length === 0 || (files.length === 1 && files[0] === '.git')
 }
 
