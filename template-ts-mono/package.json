@@ -12,7 +12,6 @@
   "scripts": {
     "build": "pnpm -r --filter=./packages/* run build",
     "release": "bumpp -r && pnpm -r publish",
-    "typecheck": "tsc --noEmit",
     "test": "vitest",
     "lint": "eslint"
   },
@@ -27,7 +26,7 @@
     "vitest": "^0.33.0"
   },
   "simple-git-hooks": {
-    "pre-commit": "pnpm lint-staged && pnpm typecheck"
+    "pre-commit": "pnpm lint-staged"
   },
   "lint-staged": {
     "*.{js,ts,json,md}": [

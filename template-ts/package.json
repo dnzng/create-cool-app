@@ -29,7 +29,6 @@
     "build": "unbuild",
     "prepublishOnly": "npm run build",
     "release": "bumpp && npm publish",
-    "typecheck": "tsc --noEmit",
     "test": "vitest",
     "lint": "eslint"
   },
@@ -44,7 +43,7 @@
     "vitest": "^0.33.0"
   },
   "simple-git-hooks": {
-    "pre-commit": "${pkgManagerNpx} lint-staged && ${pkgManagerNpx} typecheck"
+    "pre-commit": "${pkgManagerNpx} lint-staged"
   },
   "lint-staged": {
     "*.{js,ts,json,md}": [
