@@ -75,7 +75,7 @@ async function init() {
       step(`executing 'git add -A'...`)
       run('git', ['add', '-A'], sharedRunOpts)
       step(`executing 'git commit -m \'chore: init\''...`)
-      run('git', ['commit', '-m', 'chore: init'], sharedRunOpts)
+      run('git', ['commit', '-m', 'feat: init'], sharedRunOpts)
       step(`executing 'git push -u origin'...`)
       runWithErrorHandler(
         () => run('git', ['push', '-u', 'origin'], sharedRunOpts),
